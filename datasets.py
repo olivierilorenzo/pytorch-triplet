@@ -16,10 +16,16 @@ class TVReID(Dataset):
     test_data = []
     test_labels = []
 
-    def __init__(self, train, pid_max, pid_min=0, non_target=0):  # non_target=numero impostori
+    def __init__(self, train, pid_max, pid_min=0, non_target=0):
+        """
+        :param train: specifica se caricate il dataset di train(true) oppure di test(false)
+        :param pid_max: inserendo solo questo valore vengono caricati tutti gli id da 1 fino a pid_max
+        :param pid_min: insieme a pid_max definisce il range di id data caricare
+        :param non_target: numero di id da considerare come impostori, vengono caricati quelli successivi a pid_max
+        """
         self.train = train
         self.transform = transforms.ToTensor()
-        target = pid_max - non_target + 1
+
         if self.train:
             for i in range(pid_min, pid_max):
                 paths = glob.glob(self.path_reid + "Image-{}-*.jpg".format(i))
@@ -38,19 +44,24 @@ class TVReID(Dataset):
             for i in range(pid_min, pid_max):
                 paths = glob.glob(self.path_reid_test + "Image-{}-*.jpg".format(i))
                 if len(paths) > 0:
-                    if i <= target:
-                        for img in paths:
-                            self.test_data.append(img)  # path singola immagine
-                            self.test_labels.append(i)  # rispettiva label o id persona
-                    else:
-                        for img in paths:
-                            self.test_data.append(img)
-                            self.test_labels.append(0)  # label indicante impostore
-
+                    for img in paths:
+                        self.test_data.append(img)  # path singola immagine
+                        self.test_labels.append(i)  # rispettiva label o id persona
                 else:
                     print("ID {} not found!!".format(i))
                 if i % 100 == 0:
                     print(i)
+            if non_target > 0:
+                for i in range(pid_max, pid_max + non_target):
+                    paths = glob.glob(self.path_reid_test + "Image-{}-*.jpg".format(i))
+                    if len(paths) > 0:
+                        for img in paths:
+                            self.test_data.append(img)
+                            self.test_labels.append(0)  # label indicante impostore
+                    else:
+                        print("ID {} not found!!".format(i))
+                    if i % 100 == 0:
+                        print(i)
             self.test_labels = torch.LongTensor(self.test_labels)
             self.data_len = len(self.test_data)
 
@@ -185,7 +196,7 @@ class BalancedBatchSampler(BatchSampler):
 def offline_data_aug(data_aug, pidmax, pidmin=0):
     """
     Prende in input un lista data_aug di trasformazioni da applicare al dataset.
-    Il risultato viene aggiunto al dataset originale.
+    Il risultato viene aggiunto al dataset originale
     """
     path_reid = "data/train/"
 

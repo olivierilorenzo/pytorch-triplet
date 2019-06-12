@@ -25,15 +25,7 @@ def fit(train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_
         message = 'Epoch: {}/{}. Train set: Average loss: {:.4f}'.format(epoch + 1, n_epochs, train_loss)
         for metric in metrics:
             message += '\t{}: {}'.format(metric.name(), metric.value())
-        """
-        val_loss, metrics = test_epoch(val_loader, model, loss_fn, cuda, metrics)
-        val_loss /= len(val_loader)
 
-        message += '\nEpoch: {}/{}. Validation set: Average loss: {:.4f}'.format(epoch + 1, n_epochs,
-                                                                                 val_loss)
-        for metric in metrics:
-            message += '\t{}: {}'.format(metric.name(), metric.value())
-        """
         print(message)
 
         if (epoch+1) % 5 == 0:
@@ -97,37 +89,3 @@ def train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, met
 
     total_loss /= (batch_idx + 1)
     return total_loss, metrics
-
-
-def test_epoch(val_loader, model, loss_fn, cuda, metrics):
-    with torch.no_grad():
-        for metric in metrics:
-            metric.reset()
-        model.eval()
-        val_loss = 0
-        for batch_idx, (data, target) in enumerate(val_loader):
-            target = target if len(target) > 0 else None
-            if not type(data) in (tuple, list):
-                data = (data,)
-            if cuda:
-                data = tuple(d.cuda() for d in data)
-                if target is not None:
-                    target = target.cuda()
-
-            outputs = model(*data)
-
-            if type(outputs) not in (tuple, list):
-                outputs = (outputs,)
-            loss_inputs = outputs
-            if target is not None:
-                target = (target,)
-                loss_inputs += target
-
-            loss_outputs = loss_fn(*loss_inputs)
-            loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
-            val_loss += loss.item()
-
-            for metric in metrics:
-                metric(outputs, target, loss_outputs)
-
-    return val_loss, metrics

@@ -3,14 +3,13 @@ import torchvision.models
 
 
 class EmbeddingResNet(nn.Module):
+    """
+    Resnet50 con fine-tuning dal layer4 in poi
+    """
     def __init__(self):
         super(EmbeddingResNet, self).__init__()
         self.model = torchvision.models.resnet50(pretrained=True)
-        """
-        for param in self.model.parameters():
-            param.requires_grad = False
-        self.model.fc = nn.Linear(2048, 1000)
-        """
+
         for param in self.model.parameters():
             param.requires_grad = False
 
@@ -31,6 +30,9 @@ class EmbeddingResNet(nn.Module):
 
 
 class TripletNet(nn.Module):
+    """
+    Usata con la generazione random delle triplette, poco efficiente
+    """
     def __init__(self, embedding_net):
         super(TripletNet, self).__init__()
         self.embedding_net = embedding_net
