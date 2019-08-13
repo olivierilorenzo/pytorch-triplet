@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 
 
-def evaluate(train_dataset, test_dataset, model, restart=False, thresh=20, cmc_rank=20):
+def evaluate(train_dataset, test_dataset, model, thresh, cmc_rank, restart=False):
     """
     :param restart: la valutazione riparte dal dump pickle
     :param thresh: distanza oltre la quale le query vengono considerati impostori e scartati

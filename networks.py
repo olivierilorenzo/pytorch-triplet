@@ -6,21 +6,24 @@ class EmbeddingResNet(nn.Module):
     """
     Resnet50 con fine-tuning dal layer4 in poi
     """
-    def __init__(self):
+    def __init__(self, mode):
         super(EmbeddingResNet, self).__init__()
-        self.model = torchvision.models.resnet50(pretrained=True)
+        if mode == 'training':
+            self.model = torchvision.models.resnet50(pretrained=False)
+        if mode == 'finetuning':
+            self.model = torchvision.models.resnet50(pretrained=True)
 
-        for param in self.model.parameters():
-            param.requires_grad = False
+            for param in self.model.parameters():
+                param.requires_grad = False
 
-        for param in self.model.layer4.parameters():
-            param.requires_grad = True
+            for param in self.model.layer4.parameters():
+                param.requires_grad = True
 
-        for param in self.model.avgpool.parameters():
-            param.requires_grad = True
+            for param in self.model.avgpool.parameters():
+                param.requires_grad = True
 
-        for param in self.model.fc.parameters():
-            param.requires_grad = True
+            for param in self.model.fc.parameters():
+                param.requires_grad = True
 
     def forward(self, x):
         return self.model(x)

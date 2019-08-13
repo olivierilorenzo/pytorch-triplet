@@ -1,4 +1,5 @@
 import torch
+import argparse
 from torchvision import transforms
 from torch.optim import lr_scheduler
 import torch.optim as optim
@@ -7,51 +8,77 @@ from datasets import TVReID
 from datasets import BalancedBatchSampler
 from networks import EmbeddingResNet
 from losses import OnlineTripletLoss
-from utils import AllTripletSelector,HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector
+from utils import AllTripletSelector, HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector
 from metrics import AverageNonzeroTripletsMetric
 from trainer import fit
 from evaluation import evaluate
 
-# data augmentation
-transform_list = [transforms.RandomHorizontalFlip(1), transforms.RandomCrop(224, 64)]
-offline_data_aug(transform_list,300,200)
+parser = argparse.ArgumentParser()
+parser.add_argument('--pid_min', help="minimum interval pid", type=int)
+parser.add_argument('--pid_max', help="maximum interval pid", type=int)
+parser.add_argument('--non_target', default=0, help="n of impostors", type=int)
+parser.add_argument('--classes', default=5, help="n of classes in the mini-batch", type=int)
+parser.add_argument('--samples', default=20, help="n of sample per class in the mini-batch", type=int)
+parser.add_argument('--mode', default="training", help="choose between -training- for full network training and"
+                                                       " -finetuning- for layer4 finetuning")
+parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
+parser.add_argument('--lr', default=1e-3, help="learning rate", type=float)
+parser.add_argument('--triplets', default="batch-hard", help="triplet selector, choose between -batch-hard-,-semi-hard-"
+                                                             " and -random-negative-", type=float)
+parser.add_argument('--epochs', default=20, help="n of training epochs", type=int)
+parser.add_argument('--log', default=50, help="log interval length", type=int)
+parser.add_argument('--checkpoint', action="store_true", default=False, help="resume training from a checkpoint")
+parser.add_argument('--thresh', default=20, help="discard threshold for ttr,ftr metrics", type=int)
+parser.add_argument('--rank', default=20, help="cmc rank", type=int)
+parser.add_argument('--restart', action="store_true", default=False, help="resume evaluation from a pickle dump")
 
-# preparazione dataset
-train_dataset = TVReID(train=True, pid_max=300, pid_min=200)
-test_dataset = TVReID(train=False, pid_max=310, pid_min=200, non_target=10)
+if __name__ == '__main__':
+    args = parser.parse_args()
+    # data augmentation
+    transform_list = [transforms.RandomHorizontalFlip(1), transforms.RandomCrop(224, 64)]
+    offline_data_aug(transform_list, args.pid_max, args.pid_min)
 
-# preparazione modello
-cuda = torch.cuda.is_available()
+    # preparazione dataset
+    train_dataset = TVReID(train=True, pid_max=args.pid_max, pid_min=args.pid_min)
+    test_dataset = TVReID(train=False, pid_max=args.pid_max, pid_min=args.pid_min, non_target=args.non_target)
 
-train_batch_sampler = BalancedBatchSampler(train_dataset, n_classes=10, n_samples=40)
-test_batch_sampler = BalancedBatchSampler(test_dataset, n_classes=10, n_samples=40)
+    # preparazione modello
+    cuda = torch.cuda.is_available()
 
-kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
-online_train_loader = torch.utils.data.DataLoader(train_dataset, batch_sampler=train_batch_sampler, **kwargs)
-online_test_loader = torch.utils.data.DataLoader(test_dataset, batch_sampler=test_batch_sampler, **kwargs)
+    train_batch_sampler = BalancedBatchSampler(train_dataset, n_classes=args.classes, n_samples=args.samples)
+    test_batch_sampler = BalancedBatchSampler(test_dataset, n_classes=args.classes, n_samples=args.samples)
 
-margin = 1.
+    kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
+    online_train_loader = torch.utils.data.DataLoader(train_dataset, batch_sampler=train_batch_sampler, **kwargs)
+    online_test_loader = torch.utils.data.DataLoader(test_dataset, batch_sampler=test_batch_sampler, **kwargs)
 
-model = EmbeddingResNet()
+    margin = args.margin
 
-if cuda:
-    model.cuda()
-loss_fn = OnlineTripletLoss(margin, HardestNegativeTripletSelector(margin))
-lr = 1e-3
-optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
-scheduler = lr_scheduler.StepLR(optimizer, 8, gamma=0.1, last_epoch=-1)
-n_epochs = 20
-log_interval = 50
+    model = EmbeddingResNet(args.mode)
 
-# restart da checkpoint
-"""
-checkpoint = torch.load('checkpoint.pth.tar')
-model.load_state_dict(checkpoint['model_state_dict'])
-optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-epoch = checkpoint['epoch']
-"""
+    if cuda:
+        model.cuda()
+    if args.triplets == 'batch-hard':
+        loss_fn = OnlineTripletLoss(margin, HardestNegativeTripletSelector(margin))
+    if args.triplets == 'semi-hard':
+        loss_fn = OnlineTripletLoss(margin, SemihardNegativeTripletSelector(margin))
+    if args.triplets == 'random-negative':
+        loss_fn = OnlineTripletLoss(margin, RandomNegativeTripletSelector(margin))
+    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+    scheduler = lr_scheduler.StepLR(optimizer, 8, gamma=0.1, last_epoch=-1)
+    n_epochs = args.epochs
+    log_interval = args.log
 
-fit(online_train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval, metrics=[AverageNonzeroTripletsMetric()])
+    if args.checkpoint:
+        checkpoint = torch.load('checkpoint.pth.tar')
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        epoch = checkpoint['epoch']
+        fit(online_train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval,
+            metrics=[AverageNonzeroTripletsMetric()], start_epoch=epoch)
+    else:
+        fit(online_train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval,
+            metrics=[AverageNonzeroTripletsMetric()])
 
-evaluate(train_dataset, test_dataset, model, thresh=3.4)
+    evaluate(train_dataset, test_dataset, model, thresh=args.thresh, cmc_rank=args.rank, restart=args.restart)
