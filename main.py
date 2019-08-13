@@ -22,8 +22,8 @@ parser.add_argument('--data_aug', default=0, help="data augmentation", type=int)
 parser.add_argument('--non_target', default=0, help="n of impostors", type=int)
 parser.add_argument('--classes', default=5, help="n of classes in the mini-batch", type=int)
 parser.add_argument('--samples', default=20, help="n of sample per class in the mini-batch", type=int)
-parser.add_argument('--mode', default="training", help="choose between -training- for full network training and"
-                                                       " -finetuning- for layer4 finetuning")
+parser.add_argument('--mode', default="full", help="choose between -full- network training or "
+                                                   "finetuning from a specific resnet -layer-")
 parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
 parser.add_argument('--lr', default=1e-3, help="learning rate", type=float)
 parser.add_argument('--decay', default=1e-4, help="weight decay", type=float)

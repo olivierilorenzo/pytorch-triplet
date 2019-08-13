@@ -8,22 +8,82 @@ class EmbeddingResNet(nn.Module):
     """
     def __init__(self, mode):
         super(EmbeddingResNet, self).__init__()
-        if mode == 'training':
+        if mode == 'full':
             self.model = torchvision.models.resnet50(pretrained=False)
-        if mode == 'finetuning':
+        else:
             self.model = torchvision.models.resnet50(pretrained=True)
 
             for param in self.model.parameters():
                 param.requires_grad = False
 
-            for param in self.model.layer4.parameters():
-                param.requires_grad = True
+            if mode == 'layer1':
+                for param in self.model.layer1.parameters():
+                    param.requires_grad = True
 
-            for param in self.model.avgpool.parameters():
-                param.requires_grad = True
+                for param in self.model.layer2.parameters():
+                    param.requires_grad = True
 
-            for param in self.model.fc.parameters():
-                param.requires_grad = True
+                for param in self.model.layer3.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.layer4.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.avgpool.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.fc.parameters():
+                    param.requires_grad = True
+
+            if mode == 'layer2':
+                for param in self.model.layer2.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.layer3.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.layer4.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.avgpool.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.fc.parameters():
+                    param.requires_grad = True
+
+            if mode == 'layer3':
+                for param in self.model.layer3.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.layer4.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.avgpool.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.fc.parameters():
+                    param.requires_grad = True
+
+            if mode == 'layer4':
+                for param in self.model.layer4.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.avgpool.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.fc.parameters():
+                    param.requires_grad = True
+
+            if mode == 'avgpool':
+                for param in self.model.avgpool.parameters():
+                    param.requires_grad = True
+
+                for param in self.model.fc.parameters():
+                    param.requires_grad = True
+
+            if mode == 'fc':
+                for param in self.model.fc.parameters():
+                    param.requires_grad = True
 
     def forward(self, x):
         return self.model(x)
