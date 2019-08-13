@@ -65,7 +65,7 @@ def evaluate(train_dataset, test_dataset, model, thresh, cmc_rank, restart=False
     open_set_scores(match_list, dist_list, test_lab, thresh)
 
 
-def evaluate_vram_opt(train_dataset, test_dataset, model, restart=False, thresh=20, cmc_rank=20):
+def evaluate_vram_opt(train_dataset, test_dataset, model, thresh, cmc_rank, restart=False):
     cuda = torch.cuda.is_available()
     kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
@@ -121,7 +121,7 @@ def evaluate_vram_opt(train_dataset, test_dataset, model, restart=False, thresh=
     open_set_scores(match_list, dist_list, test_lab, thresh)
 
 
-def evaluate_gpu(train_dataset, test_dataset, model, thresh=20, cmc_rank=20): # con 1000 persone non bastano 16gb VRAM
+def evaluate_gpu(train_dataset, test_dataset, model, thresh, cmc_rank, restart=False): # con 1000 persone non bastano 16gb VRAM
     cuda = torch.cuda.is_available()
     kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
 
