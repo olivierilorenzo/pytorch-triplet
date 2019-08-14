@@ -4,7 +4,7 @@ import torchvision.models
 
 class EmbeddingResNet(nn.Module):
     """
-    Resnet50 con fine-tuning dal layer4 in poi
+    ResNet50 object for full network training or fine-tuning on a specific layer
     """
     def __init__(self, mode):
         super(EmbeddingResNet, self).__init__()

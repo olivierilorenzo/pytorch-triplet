@@ -5,10 +5,12 @@ import numpy as np
 
 def evaluate(train_dataset, test_dataset, model, thresh, cmc_rank, restart=False):
     """
-    :param restart: la valutazione riparte dal dump pickle
-    :param thresh: distanza oltre la quale le query vengono considerati impostori e scartati
-                  (solo se sono presenti impostori nel dataset)
-    :param cmc_rank: rank massimo delle cumulative matching curve
+    :param train_dataset: train dataset object
+    :param test_dataset: test dataset object
+    :param model: model object
+    :param restart: resume evaluation from a pickle dump if True
+    :param thresh: discard distance for ttr,ftr metrics
+    :param cmc_rank: max cmc rank
     :return:
     """
     cuda = torch.cuda.is_available()
@@ -168,8 +170,7 @@ def evaluate_gpu(train_dataset, test_dataset, model, thresh, cmc_rank, restart=F
 
 def extract_embeddings(dataloader, model, cuda):
     """
-    Estrae i feature vector delle immagini e le rispettive label
-    dal dataloader utilizzato utilizzando il modello
+    Extracts feature vectors of image and respective labels from the dataloader
     """
     with torch.no_grad():
         model.eval()

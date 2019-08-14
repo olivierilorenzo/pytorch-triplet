@@ -16,12 +16,12 @@ class TVReID(Dataset):
     test_data = []
     test_labels = []
 
-    def __init__(self, train, pid_max, pid_min=0, non_target=0):
+    def __init__(self, train, pid_max, pid_min, non_target):
         """
-        :param train: specifica se caricate il dataset di train(true) oppure di test(false)
-        :param pid_max: inserendo solo questo valore vengono caricati tutti gli id da 1 fino a pid_max
-        :param pid_min: insieme a pid_max definisce il range di id data caricare
-        :param non_target: numero di id da considerare come impostori, vengono caricati quelli successivi a pid_max
+        :param train: load train dataset(true) or test dataset(false)
+        :param pid_max: if pid_min is omitted all pids from 1 or 0 to pid_max are loaded
+        :param pid_min: with pid_max defines the range of pids to load
+        :param non_target: n of pids that'll be considered impostors, they'll be sampled from pids after pid_max
         """
         self.train = train
         self.transform = transforms.ToTensor()
@@ -195,8 +195,8 @@ class BalancedBatchSampler(BatchSampler):
 
 def offline_data_aug(data_aug, pidmax, pidmin=0):
     """
-    Prende in input un lista data_aug di trasformazioni da applicare al dataset.
-    Il risultato viene aggiunto al dataset originale
+    Gets a list data_aug of PyTorch transforms then applies them to the dataset.
+    Result images are added to the original dataset.
     """
     path_reid = "data/train/"
 
