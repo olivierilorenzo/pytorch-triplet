@@ -18,22 +18,22 @@ parser.add_argument('--train_min', default=0, help="first pid of the training in
 parser.add_argument('--train_max', help="last pid of the training interval", type=int)
 parser.add_argument('--test_min', default=0, help="first pid of the testing interval", type=int)
 parser.add_argument('--test_max', help="last pid of the testing interval", type=int)
-parser.add_argument('--data_aug', default=0, help="-0- no data augmentation, -1- horizontal flip + random crop, "
-                                                  "-2- horizontal flip + vertical flip + random crop", type=int)
+parser.add_argument('--data_aug', default=0, help="<0> no data augmentation, <1> horizontal flip + random crop, "
+                                                  "<2> horizontal flip + vertical flip + random crop", type=int)
 parser.add_argument('--non_target', default=0, help="n of impostors", type=int)
 parser.add_argument('--classes', default=5, help="n of classes in the mini-batch", type=int)
 parser.add_argument('--samples', default=20, help="n of sample per class in the mini-batch", type=int)
-parser.add_argument('--mode', default="full", help="choose between -full- network training or "
-                                                   "fine-tuning from a specific ResNet -layer-")
+parser.add_argument('--tuning', default="full", help="choose between <full> network training or "
+                                                     "fine-tuning from a specific ResNet <layer>")
 parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
 parser.add_argument('--lr', default=1e-3, help="learning rate", type=float)
 parser.add_argument('--decay', default=1e-4, help="weight decay for Adam optimizer", type=float)
-parser.add_argument('--triplets', default="batch-hard", help="triplet selector, choose between -batch-hard-,-semi-hard-"
-                                                             " and -random-negative-")
+parser.add_argument('--triplets', default="batch-hard", help="choose triplet selector between <batch-hard>,<semi-hard>"
+                                                             " and <random-negative>")
 parser.add_argument('--epochs', default=20, help="n of training epochs", type=int)
 parser.add_argument('--log', default=50, help="log interval length", type=int)
 parser.add_argument('--checkpoint', action="store_true", default=False, help="resume training from a checkpoint")
-parser.add_argument('--eval', default="gpu", help="choose testing hardware between -gpu-,-cpu- or -vram-opt-")
+parser.add_argument('--eval', default="gpu", help="choose testing hardware between <gpu>,<cpu> or <vram-opt>")
 parser.add_argument('--thresh', default=20, help="discard threshold for ttr,ftr metrics", type=int)
 parser.add_argument('--rank', default=20, help="max cmc rank", type=int)
 parser.add_argument('--restart', action="store_true", default=False, help="resume evaluation from a pickle dump")
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     margin = args.margin
 
-    model = EmbeddingResNet(args.mode)
+    model = EmbeddingResNet(args.tuning)
 
     if cuda:
         model.cuda()

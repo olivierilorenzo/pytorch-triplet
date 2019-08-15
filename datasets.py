@@ -16,7 +16,7 @@ class TVReID(Dataset):
     test_data = []
     test_labels = []
 
-    def __init__(self, train, pid_max, pid_min, non_target):
+    def __init__(self, train, pid_max, pid_min, non_target=0):
         """
         :param train: load train dataset(true) or test dataset(false)
         :param pid_max: if pid_min is omitted all pids from 1 or 0 to pid_max are loaded
