@@ -54,7 +54,7 @@ You must put your dataset in the data folder split in train and test.
 
 - **samples**, n of sample per class in the mini-batch, default value 20
 
-- **tuning**, choose between <full> network training or fine-tuning from a specific ResNet <layer> (layer3, layer4, fc ...)
+- **tuning**, choose between *full* network training or fine-tuning from a specific ResNet *layer* (layer3, layer4, fc ...)
 
 - **margin**, triplet loss margin, default value 1
 
@@ -62,7 +62,7 @@ You must put your dataset in the data folder split in train and test.
 
 - **decay**, weight decay for Adam optimizer, default value 1e-4
 
-- **triplets**, choose triplet selector between <batch-hard>,<semi-hard> and <random-negative>, default value <batch-hard>
+- **triplets**, choose triplet selector between *batch-hard*,*semi-hard* and *random-negative*, default value *batch-hard*
 
 - **epochs**, n of training epochs, default value 20
 
@@ -70,7 +70,7 @@ You must put your dataset in the data folder split in train and test.
 
 - **checkpoint**, resume training from a checkpoint
 
-- **eval**, choose testing hardware between <gpu>,<cpu> or <vram-opt>, default value <gpu>
+- **eval**, choose testing hardware between *gpu*,*cpu* or *vram-opt*, default value *gpu*
 
 - **thresh**, discard threshold for TTR,FTR metrics, default value 20
 
@@ -102,6 +102,6 @@ If you want to directly test the network simply put the same number of epochs of
 
 ### Warning
 
-Be sure to adjust *classes* and *samples* params according to your video card memory. Note that training ResNet50 from scratch will take more memory than finetuning.
+Be sure to adjust *classes* and *samples* params according to your video card memory. Note that training ResNet50 from scratch will take more memory than finetuning. For evaluation you should use *vram-opt* in *eval* param if you are low on VRAM or your dataset is big.
 
 Also, pay attention to use *data_aug* param only the first time you launch the script otherwise you'll apply data aumentation on the already augmented dataset .
