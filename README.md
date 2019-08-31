@@ -13,9 +13,9 @@ https://github.com/adambielski/siamese-triplet
 - pillow 6.0.0 or later
 - numpy 1.16.3 or later
 
-## Getting started
+## File directory
 
-### File directory
+How your script directory should be.
 
 ```
   pytorch-triplet
@@ -32,9 +32,11 @@ https://github.com/adambielski/siamese-triplet
      └── utils.py
 ```
 
-You must put your dataset in the data folder split in train and test.
+You must put your dataset in the data folder split in train and test. Dataset images must have 224x224 resolution to correctly feed ResNet50 network.
 
-### Script params
+## Script params
+
+You can get similar information with --h or --help command from terminal:
 
 - **train_min**, first pid of the training interval, default value 0
 
@@ -62,7 +64,7 @@ You must put your dataset in the data folder split in train and test.
 
 - **decay**, weight decay for Adam optimizer, default value 1e-4
 
-- **triplets**, choose triplet selector between *batch-hard*,*semi-hard* and *random-negative*, default value *batch-hard*
+- **triplets**, choose triplet selector between *batch-hard*, *semi-hard* and *random-negative*, default value *batch-hard*
 
 - **epochs**, n of training epochs, default value 20
 
@@ -70,20 +72,20 @@ You must put your dataset in the data folder split in train and test.
 
 - **checkpoint**, resume training from a checkpoint
 
-- **eval**, choose testing hardware between *gpu*,*cpu* or *vram-opt*, default value *gpu*
+- **eval**, choose testing hardware between *gpu*, *cpu* or *vram-opt*, default value *gpu*
 
-- **thresh**, discard threshold for TTR,FTR metrics, default value 20
+- **thresh**, discard threshold for TTR, FTR metrics, default value 20
 
 - **rank**, max cmc rank, default value 20
 
 - **restart**, resume evaluation from a pickle dump
 
-### Examples
+## Examples
 
 Training from scratch:
 
 ```
-!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --data_aug 0 --epochs 20 --tuning layer3 --classes 5 --samples 20 --lr 10e-4 --decay 10e-5 
+!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --data_aug 0 --epochs 20 --tuning full --classes 5 --samples 20 --lr 10e-4 --decay 10e-5 
 ```
 
 Restarting training from a tar checkpoint:
@@ -95,12 +97,12 @@ Restarting training from a tar checkpoint:
 Restarting network test from a pickle dump:
 
 ```
-!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --epochs 20 --tuning layer3 --classes 5 --samples 20 --lr 10e-4 --decay 10e-5 --restart
+!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --epochs 20 --classes 5 --samples 20 --restart
 ```
 
 If you want to directly test the network simply put the same number of epochs of your checkpoint as epochs param.
 
-### Warning
+## Warnings
 
 Be sure to adjust *classes* and *samples* params according to your video card memory. Note that training ResNet50 from scratch will take more memory than finetuning. For evaluation you should use *vram-opt* in *eval* param if you are low on VRAM or your dataset is big.
 
