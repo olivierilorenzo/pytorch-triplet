@@ -92,6 +92,18 @@ class EmbeddingResNet(nn.Module):
         return self.forward(x)
 
 
+class EmbeddingVgg16(nn.Module):
+    def __init__(self):
+        super(EmbeddingVgg16, self).__init__()
+        self.model = torchvision.models.vgg16_bn(pretrained=False)
+
+    def forward(self, x):
+        return self.model.features(x)
+
+    def get_embedding(self, x):
+        return self.forward(x)
+
+
 class TripletNet(nn.Module):
     """
     Usata con la generazione random delle triplette, poco efficiente

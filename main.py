@@ -6,7 +6,7 @@ import torch.optim as optim
 from datasets import offline_data_aug
 from datasets import TVReID
 from datasets import BalancedBatchSampler
-from networks import EmbeddingResNet
+from networks import EmbeddingResNet, EmbeddingVgg16
 from losses import OnlineTripletLoss
 from utils import AllTripletSelector, HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector
 from metrics import AverageNonzeroTripletsMetric
@@ -23,6 +23,7 @@ parser.add_argument('--data_aug', default=0, help="<0> no data augmentation, <1>
 parser.add_argument('--non_target', default=0, help="n of impostors", type=int)
 parser.add_argument('--classes', default=5, help="n of classes in the mini-batch", type=int)
 parser.add_argument('--samples', default=20, help="n of sample per class in the mini-batch", type=int)
+parser.add_argument('--network', default="resnet", help="choose network for feature generation")
 parser.add_argument('--tuning', default="full", help="choose between <full> network training or "
                                                      "fine-tuning from a specific ResNet <layer>")
 parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
@@ -67,8 +68,10 @@ if __name__ == '__main__':
     online_test_loader = torch.utils.data.DataLoader(test_dataset, batch_sampler=test_batch_sampler, **kwargs)
 
     margin = args.margin
-
-    model = EmbeddingResNet(args.tuning)
+    if args.network == 'resnet':
+        model = EmbeddingResNet(args.tuning)
+    if args.network == 'vgg16':
+        model = EmbeddingVgg16()
 
     if cuda:
         model.cuda()
