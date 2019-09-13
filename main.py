@@ -71,7 +71,7 @@ if __name__ == '__main__':
     if args.network == 'resnet':
         model = EmbeddingResNet(args.tuning)
     if args.network == 'vgg16':
-        model = EmbeddingVgg16()
+        model = EmbeddingVgg16(args.tuning)
 
     if cuda:
         model.cuda()

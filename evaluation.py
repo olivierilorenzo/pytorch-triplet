@@ -226,7 +226,7 @@ def cmc_score(rank_list, rank_max):
         print("Rank {}: {}%".format(j, rank_value))
 
 
-def open_set_scores(match_list, dist_list, test_lab, thresh=20): # calcolo TTR e FTR
+def open_set_scores(match_list, dist_list, test_lab, thresh=20):  # calcolo TTR e FTR
     tot = len(test_lab)
     non_target_tot = list(test_lab).count(0)
     target_tot = tot - non_target_tot

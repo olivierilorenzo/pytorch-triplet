@@ -93,12 +93,19 @@ class EmbeddingResNet(nn.Module):
 
 
 class EmbeddingVgg16(nn.Module):
-    def __init__(self):
+    def __init__(self, mode):
         super(EmbeddingVgg16, self).__init__()
-        self.model = torchvision.models.vgg16_bn(pretrained=False)
+        if mode == 'full':
+            self.model = torchvision.models.vgg16_bn(pretrained=False)
+        else:
+            self.model = torchvision.models.vgg16_bn(pretrained=True)
+            for param in self.model.parameters():
+                param.requires_grad = False
+            for param in self.model.classifier.parameters():
+                param.requires_grad = True
 
     def forward(self, x):
-        return self.model.features(x)
+        return self.model(x)
 
     def get_embedding(self, x):
         return self.forward(x)
