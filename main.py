@@ -6,7 +6,7 @@ import torch.optim as optim
 from datasets import offline_data_aug
 from datasets import TVReID
 from datasets import BalancedBatchSampler
-from networks import EmbeddingResNet, EmbeddingVgg16
+from networks import EmbeddingResNet, EmbeddingVgg16, EmbeddingInception, EmbeddingAlexNet, EmbeddingResNeXt, EmbeddingDenseNet, EmbeddingGoogleNet
 from losses import OnlineTripletLoss
 from utils import AllTripletSelector, HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector
 from metrics import AverageNonzeroTripletsMetric
@@ -23,7 +23,8 @@ parser.add_argument('--data_aug', default=0, help="<0> no data augmentation, <1>
 parser.add_argument('--non_target', default=0, help="n of impostors", type=int)
 parser.add_argument('--classes', default=5, help="n of classes in the mini-batch", type=int)
 parser.add_argument('--samples', default=20, help="n of sample per class in the mini-batch", type=int)
-parser.add_argument('--network', default="resnet", help="choose network for feature generation")
+parser.add_argument('--network', default="resnet", help="choose between <resnet>, <vgg16>, <alexnet>, <densenet>"
+                                                        " and <resnext> for feature extraction")
 parser.add_argument('--tuning', default="full", help="choose between <full> network training or "
                                                      "fine-tuning from a specific ResNet <layer>")
 parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
@@ -72,6 +73,16 @@ if __name__ == '__main__':
         model = EmbeddingResNet(args.tuning)
     if args.network == 'vgg16':
         model = EmbeddingVgg16(args.tuning)
+    if args.network == 'inception':
+        model = EmbeddingInception(args.tuning)
+    if args.network == 'alexnet':
+        model = EmbeddingAlexNet(args.tuning)
+    if args.network == 'densenet':
+        model = EmbeddingDenseNet(args.tuning)
+    if args.network == 'resnext':
+        model = EmbeddingResNeXt(args.tuning)
+    if args.network == 'googlenet':
+        model = EmbeddingGoogleNet(args.tuning)
 
     if cuda:
         model.cuda()

@@ -32,8 +32,8 @@ class TVReID(Dataset):
                 paths = glob.glob(self.path_reid + "Image-{}-*.jpg".format(i))
                 if len(paths) > 0:
                     for img in paths:
-                        self.train_data.append(img)  # path singola immagine
-                        self.train_labels.append(i)  # rispettiva label o id persona
+                        self.train_data.append(img)  # single image path
+                        self.train_labels.append(i)  # label/person id
                 else:
                     print("ID {} not found!!".format(i))
                 if i % 100 == 0:
@@ -46,8 +46,8 @@ class TVReID(Dataset):
                 paths = glob.glob(self.path_reid_test + "Image-{}-*.jpg".format(i))
                 if len(paths) > 0:
                     for img in paths:
-                        self.test_data.append(img)  # path singola immagine
-                        self.test_labels.append(i)  # rispettiva label o id persona
+                        self.test_data.append(img)  # single image path
+                        self.test_labels.append(i)  # label/person id
                 else:
                     print("ID {} not found!!".format(i))
                 if i % 100 == 0:
@@ -58,7 +58,7 @@ class TVReID(Dataset):
                     if len(paths) > 0:
                         for img in paths:
                             self.test_data.append(img)
-                            self.test_labels.append(0)  # label indicante impostore
+                            self.test_labels.append(0)  # impostor label
                     else:
                         print("ID {} not found!!".format(i))
                     if i % 100 == 0:
@@ -66,7 +66,7 @@ class TVReID(Dataset):
             self.test_labels = torch.LongTensor(self.test_labels)
             self.data_len = len(self.test_data)
 
-    def __getitem__(self, index):  # viene caricata l'immagine richiesta dal sampler
+    def __getitem__(self, index):  # activated by sampler
         if self.train:
             single_image_name = self.train_data[index]
             img_as_img = Image.open(single_image_name)
@@ -84,7 +84,7 @@ class TVReID(Dataset):
         return self.data_len
 
 
-class TripletTVReID(Dataset):
+class TripletTVReID(Dataset):  # Unused
     """
     Train: For each sample (anchor) randomly chooses a positive and negative samples
     Test: Creates fixed triplets for testing
