@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.nn.functional as F
 import torchvision.models
 
 
@@ -153,9 +154,9 @@ class EmbeddingDenseNet(nn.Module):
             for param in self.model.parameters():
                 param.requires_grad = False
 
-            for param in self.model.features['denseblock4'].parameters():
+            for param in self.model.features.denseblock4.parameters():
                 param.requires_grad = True
-            for param in self.model.features['norm5'].parameters():
+            for param in self.model.features.norm5.parameters():
                 param.requires_grad = True
             for param in self.model.classifier.parameters():
                 param.requires_grad = True
@@ -263,7 +264,14 @@ class EmbeddingGoogleNet(nn.Module):
             self.model = torchvision.models.googlenet(pretrained=True)
             for param in self.model.parameters():
                 param.requires_grad = False
-            for param in self.model.classifier.parameters():
+
+            for param in self.model.inception5b.parameters():
+                param.requires_grad = True
+            for param in self.model.avgpool.parameters():
+                param.requires_grad = True
+            for param in self.model.dropout.parameters():
+                param.requires_grad = True
+            for param in self.model.fc.parameters():
                 param.requires_grad = True
 
     def forward(self, x):
@@ -309,6 +317,24 @@ class EmbeddingInception(nn.Module):
 
     def get_embedding(self, x):
         return self.forward(x)
+
+
+class ClassificationNet(nn.Module):
+    def __init__(self, embedding_net, n_classes):
+        super(ClassificationNet, self).__init__()
+        self.embedding_net = embedding_net
+        self.n_classes = n_classes
+        self.nonlinear = nn.PReLU()
+        self.fc1 = nn.Linear(1000, n_classes)
+
+    def forward(self, x):
+        output = self.embedding_net(x)
+        output = self.nonlinear(output)
+        scores = F.log_softmax(self.fc1(output), dim=-1)
+        return scores
+
+    def get_embedding(self, x):
+        return self.nonlinear(self.embedding_net(x))
 
 
 class TripletNet(nn.Module):

@@ -16,7 +16,7 @@ class TVReID(Dataset):
     test_data = []
     test_labels = []
 
-    def __init__(self, train, pid_max, pid_min, non_target=0):
+    def __init__(self, train, pid_max, pid_min, non_target=0, is_inception=False):
         """
         :param train: load train dataset(true) or test dataset(false)
         :param pid_max: if pid_min is omitted all pids from 1 or 0 to pid_max are loaded
@@ -25,8 +25,10 @@ class TVReID(Dataset):
         """
         self.train = train
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        self.transform = transforms.Compose([transforms.ToTensor(), normalize])
-
+        if is_inception:
+            self.transform = transforms.Compose([transforms.Resize((299, 299)), transforms.ToTensor(), normalize])
+        else:
+            self.transform = transforms.Compose([transforms.ToTensor(), normalize])
         if self.train:
             for i in range(pid_min, pid_max):
                 paths = glob.glob(self.path_reid + "Image-{}-*.jpg".format(i))

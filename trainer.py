@@ -57,18 +57,39 @@ def train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, met
                 target = target.cuda()
 
         optimizer.zero_grad()
-        outputs = model(*data)
 
-        if type(outputs) not in (tuple, list):
-            outputs = (outputs,)
+        if model.__class__.__name__ == 'Inception3':
+            outputs, aux = model(*data)
+            if type(outputs) not in (tuple, list):
+                outputs = (outputs,)
+            if type(aux) not in (tuple, list):
+                aux = (aux,)
 
-        loss_inputs = outputs
-        if target is not None:
-            target = (target,)
-            loss_inputs += target
+            loss_inputs1 = outputs
+            loss_inputs2 = aux
+            if target is not None:
+                target = (target,)
+                loss_inputs1 += target
+                loss_inputs2 += target
 
-        loss_outputs = loss_fn(*loss_inputs)
-        loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
+            loss_outputs1 = loss_fn(*loss_inputs1)
+            loss_outputs2 = loss_fn(*loss_inputs2)
+            loss1 = loss_outputs1[0] if type(loss_outputs1) in (tuple, list) else loss_outputs1
+            loss2 = loss_outputs2[0] if type(loss_outputs2) in (tuple, list) else loss_outputs2
+            loss = loss1 + 0.4 * loss2
+        else:
+            outputs = model(*data)
+            if type(outputs) not in (tuple, list):
+                outputs = (outputs,)
+
+            loss_inputs = outputs
+            if target is not None:
+                target = (target,)
+                loss_inputs += target
+
+            loss_outputs = loss_fn(*loss_inputs)
+            loss = loss_outputs[0] if type(loss_outputs) in (tuple, list) else loss_outputs
+
         losses.append(loss.item())
         total_loss += loss.item()
         loss.backward()

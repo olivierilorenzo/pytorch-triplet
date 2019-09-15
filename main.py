@@ -54,9 +54,16 @@ if __name__ == '__main__':
         offline_data_aug(transform_list, args.train_max, args.train_min)
 
     print("Loading train dataset...")
-    train_dataset = TVReID(train=True, pid_max=args.train_max, pid_min=args.train_min)
+    if args.network == 'inception':
+        train_dataset = TVReID(train=True, pid_max=args.train_max, pid_min=args.train_min, is_inception=True)
+    else:
+        train_dataset = TVReID(train=True, pid_max=args.train_max, pid_min=args.train_min)
     print("Loading test dataset...")
-    test_dataset = TVReID(train=False, pid_max=args.test_max, pid_min=args.test_min, non_target=args.non_target)
+    if args.network == 'inception':
+        test_dataset = TVReID(train=False, pid_max=args.test_max, pid_min=args.test_min, non_target=args.non_target,
+                              is_inception=True)
+    else:
+        test_dataset = TVReID(train=False, pid_max=args.test_max, pid_min=args.test_min, non_target=args.non_target)
 
     print("Loading model...")
     cuda = torch.cuda.is_available()
