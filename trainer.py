@@ -58,7 +58,7 @@ def train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, met
 
         optimizer.zero_grad()
 
-        if model.__class__.__name__ == 'Inception3':
+        if model.__class__.__name__ == 'EmbeddingInception':
             outputs, aux = model(*data)
             if type(outputs) not in (tuple, list):
                 outputs = (outputs,)
@@ -77,6 +77,7 @@ def train_epoch(train_loader, model, loss_fn, optimizer, cuda, log_interval, met
             loss1 = loss_outputs1[0] if type(loss_outputs1) in (tuple, list) else loss_outputs1
             loss2 = loss_outputs2[0] if type(loss_outputs2) in (tuple, list) else loss_outputs2
             loss = loss1 + 0.4 * loss2
+            loss_outputs = loss_outputs1
         else:
             outputs = model(*data)
             if type(outputs) not in (tuple, list):

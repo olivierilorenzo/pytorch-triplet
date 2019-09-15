@@ -295,22 +295,17 @@ class EmbeddingInception(nn.Module):
             for param in self.model.parameters():
                 param.requires_grad = False
 
-            if mode == 'mixed7a':
-                for param in self.model.Mixed_7a.parameters():
-                    param.requires_grad = True
+            for param in self.model.Mixed_7a.parameters():
+                param.requires_grad = True
 
-                for param in self.model.Mixed_7b.parameters():
-                    param.requires_grad = True
+            for param in self.model.Mixed_7b.parameters():
+                param.requires_grad = True
 
-                for param in self.model.Mixed_7c.parameters():
-                    param.requires_grad = True
+            for param in self.model.Mixed_7c.parameters():
+                param.requires_grad = True
 
-                for param in self.model.fc.parameters():
-                    param.requires_grad = True
-
-            if mode == 'fc':
-                for param in self.model.fc.parameters():
-                    param.requires_grad = True
+            for param in self.model.fc.parameters():
+                param.requires_grad = True
 
     def forward(self, x):
         return self.model(x)
