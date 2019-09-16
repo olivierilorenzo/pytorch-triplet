@@ -56,8 +56,10 @@ You can get similar information with --h or --help command from terminal:
 
 - **samples**, n of sample per class in the mini-batch, default value 20
 
-- **tuning**, choose between *full* network training or fine-tuning from a specific ResNet *layer* (layer3, layer4, fc ...)
+- **network**, choose between <resnet>, <vgg16>, <alexnet>, <densenet>, <resnext>, <googlenet> and <inception>(v3) for feature       extraction"
 
+- **tuning**, choose between <full> network training or <ft> for fine-tuning. 
+              If you choosed ResNet or ResneXt as network you can specify the starting <layer> (layer3, layer4, fc ...) for finetuning.
 - **margin**, triplet loss margin, default value 1
 
 - **lr**, learning rate of the network, default value 1e-3
