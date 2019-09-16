@@ -23,10 +23,12 @@ parser.add_argument('--data_aug', default=0, help="<0> no data augmentation, <1>
 parser.add_argument('--non_target', default=0, help="n of impostors", type=int)
 parser.add_argument('--classes', default=5, help="n of classes in the mini-batch", type=int)
 parser.add_argument('--samples', default=20, help="n of sample per class in the mini-batch", type=int)
-parser.add_argument('--network', default="resnet", help="choose between <resnet>, <vgg16>, <alexnet>, <densenet>"
-                                                        " and <resnext> for feature extraction")
-parser.add_argument('--tuning', default="full", help="choose between <full> network training or "
-                                                     "fine-tuning from a specific ResNet <layer>")
+parser.add_argument('--network', default="resnet", help="choose between <resnet>, <vgg16>, <alexnet>, <densenet>, "
+                                                        "<resnext>, <googlenet> and <inception>(v3) "
+                                                        "for feature extraction")
+parser.add_argument('--tuning', default="full", help="choose between <full> network training or <ft> for fine-tuning."
+                                                     " If you choosed ResNet or ResneXt as network you can specify the "
+                                                     "starting <layer> (layer3, layer4, fc ...) for finetuning")
 parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
 parser.add_argument('--lr', default=1e-3, help="learning rate", type=float)
 parser.add_argument('--decay', default=1e-4, help="weight decay for Adam optimizer", type=float)
