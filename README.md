@@ -1,6 +1,6 @@
 # Person Re-ID with Triplet Loss
 
-PyTorch implementation of Triplet Loss using a pre-trained ResNet50 as baseline network. 
+PyTorch implementation of Triplet Loss using a pre-trained network. 
 
 Base code of Triplet Loss and Triplet Mining is taken from adambielski's repository:
 
@@ -47,7 +47,7 @@ You can get similar information with --h or --help command from terminal:
 - **test_max**, last pid of the testing interval
 
 - **data_aug**, applies data augmentation on the train min-max interval,
-               <0> no data augmentation, <1> horizontal flip + random crop, <2> horizontal flip + vertical flip + random crop,
+               *0* no data augmentation, *1* horizontal flip + random crop, *2* horizontal flip + vertical flip + random crop,
                default value 0
 
 - **non_target**, n of impostors to be sampled from dataset, default value 0 
@@ -56,10 +56,10 @@ You can get similar information with --h or --help command from terminal:
 
 - **samples**, n of sample per class in the mini-batch, default value 20
 
-- **network**, choose between <resnet>, <vgg16>, <alexnet>, <densenet>, <resnext>, <googlenet> and <inception>(v3) for feature       extraction"
+- **network**, choose between *resnet*, *vgg16*, *alexnet*, *densenet*, *resnext*, *googlenet* and *inception*(v3) for feature extraction"
 
-- **tuning**, choose between <full> network training or <ft> for fine-tuning. 
-              If you choosed ResNet or ResneXt as network you can specify the starting <layer> (layer3, layer4, fc ...) for finetuning.
+- **tuning**, choose between *full* network training or *ft* for fine-tuning. 
+              If you choosed ResNet or ResneXt as network you can specify the starting *layer* (layer3, layer4, fc ...) for finetuning.
 - **margin**, triplet loss margin, default value 1
 
 - **lr**, learning rate of the network, default value 1e-3
