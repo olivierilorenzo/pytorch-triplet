@@ -1,6 +1,6 @@
 # Person Re-ID with Triplet Loss
 
-PyTorch implementation of Triplet Loss using a pre-trained network. 
+PyTorch implementation of Triplet Loss using a collection pre-trained networks. 
 
 Base code of Triplet Loss and Triplet Mining is taken from adambielski's repository:
 
@@ -32,7 +32,7 @@ How your script directory should be.
      └── utils.py
 ```
 
-You must put your dataset in the data folder split in train and test. Dataset images must have 224x224 resolution to correctly feed ResNet50 network.
+You must put your dataset in the data folder split in train and test. Dataset images must have 224x224 resolution to correctly feed networks.
 
 ## Script params
 
@@ -59,7 +59,12 @@ You can get similar information with --h or --help command from terminal:
 - **network**, choose between *resnet*, *vgg16*, *alexnet*, *densenet*, *resnext*, *googlenet* and *inception*(v3) for feature extraction"
 
 - **tuning**, choose between *full* network training or *ft* for fine-tuning. 
-              If you choosed ResNet or ResneXt as network you can specify the starting *layer* (layer3, layer4, fc ...) for finetuning.
+              If you chose ResNet or ResneXt as network you can specify the starting *layer* (layer3, layer4, fc ...) for finetuning.
+
+- **classify**, use previously chosen *network* for classification, with cross-entropy loss.
+                In this case you only need *samples* parameter,not *classes*, to start training.
+                You can't choose a pid interval, so you must use *train_max* and *test_max* params only.
+             
 - **margin**, triplet loss margin, default value 1
 
 - **lr**, learning rate of the network, default value 1e-3
@@ -106,6 +111,6 @@ If you want to directly test the network simply put the same number of epochs of
 
 ## Warnings
 
-Be sure to adjust *classes* and *samples* params according to your video card memory. Note that training ResNet50 from scratch will take more memory than finetuning. For evaluation you should use *vram-opt* in *eval* param if you are low on VRAM or your dataset is big.
-
+Be sure to adjust *classes* and *samples* params according to your video card memory. Note that training from scratch will take more memory than finetuning. For evaluation you should use *vram-opt* in *eval* param if you are low on VRAM or your dataset is big.
+ 
 Also, pay attention to use *data_aug* param only the first time you launch the script otherwise you'll apply data aumentation on the already augmented dataset .

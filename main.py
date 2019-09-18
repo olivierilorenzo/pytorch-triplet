@@ -3,6 +3,7 @@ import argparse
 from torchvision import transforms
 from torch.optim import lr_scheduler
 import torch.optim as optim
+import torch.nn as nn
 from datasets import offline_data_aug
 from datasets import TVReID
 from datasets import BalancedBatchSampler
@@ -11,7 +12,7 @@ from losses import OnlineTripletLoss
 from utils import AllTripletSelector, HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector
 from metrics import AverageNonzeroTripletsMetric
 from trainer import fit
-from evaluation import evaluate, evaluate_gpu, evaluate_vram_opt
+from evaluation import evaluate, evaluate_gpu, evaluate_vram_opt, classification
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--train_min', default=0, help="first pid of the training interval", type=int)
@@ -29,6 +30,8 @@ parser.add_argument('--network', default="resnet", help="choose between <resnet>
 parser.add_argument('--tuning', default="full", help="choose between <full> network training or <ft> for fine-tuning."
                                                      " If you choosed ResNet or ResneXt as network you can specify the "
                                                      "starting <layer> (layer3, layer4, fc ...) for finetuning")
+parser.add_argument('--classify', action="store_true", default=False, help="use choosed network for classification,"
+                                                                           " without tripletloss")
 parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
 parser.add_argument('--lr', default=1e-3, help="learning rate", type=float)
 parser.add_argument('--decay', default=1e-4, help="weight decay for Adam optimizer", type=float)
@@ -69,15 +72,18 @@ if __name__ == '__main__':
 
     print("Loading model...")
     cuda = torch.cuda.is_available()
-
-    train_batch_sampler = BalancedBatchSampler(train_dataset, n_classes=args.classes, n_samples=args.samples)
-    test_batch_sampler = BalancedBatchSampler(test_dataset, n_classes=args.classes, n_samples=args.samples)
-
     kwargs = {'num_workers': 1, 'pin_memory': True} if cuda else {}
-    online_train_loader = torch.utils.data.DataLoader(train_dataset, batch_sampler=train_batch_sampler, **kwargs)
-    online_test_loader = torch.utils.data.DataLoader(test_dataset, batch_sampler=test_batch_sampler, **kwargs)
+    if args.classify:
+        train_dataset.classify_train_labels()
+        test_dataset.classify_test_labels()
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.samples, shuffle=True, **kwargs)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.samples, shuffle=False, **kwargs)
+    else:
+        train_batch_sampler = BalancedBatchSampler(train_dataset, n_classes=args.classes, n_samples=args.samples)
+        test_batch_sampler = BalancedBatchSampler(test_dataset, n_classes=args.classes, n_samples=args.samples)
+        train_loader = torch.utils.data.DataLoader(train_dataset, batch_sampler=train_batch_sampler, **kwargs)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_sampler=test_batch_sampler, **kwargs)
 
-    margin = args.margin
     if args.network == 'resnet':
         model = EmbeddingResNet(args.tuning)
     if args.network == 'vgg16':
@@ -92,15 +98,21 @@ if __name__ == '__main__':
         model = EmbeddingResNeXt(args.tuning)
     if args.network == 'googlenet':
         model = EmbeddingGoogleNet(args.tuning)
+    if args.classify:
+        model.classification_setup(args.train_max - 1)  # dataset object samples train_max - 1 pids
 
     if cuda:
         model.cuda()
-    if args.triplets == 'batch-hard':
-        loss_fn = OnlineTripletLoss(margin, HardestNegativeTripletSelector(margin))
-    if args.triplets == 'semi-hard':
-        loss_fn = OnlineTripletLoss(margin, SemihardNegativeTripletSelector(margin))
-    if args.triplets == 'random-negative':
-        loss_fn = OnlineTripletLoss(margin, RandomNegativeTripletSelector(margin))
+    if args.classify:
+        loss_fn = torch.nn.CrossEntropyLoss()
+    else:
+        margin = args.margin
+        if args.triplets == 'batch-hard':
+            loss_fn = OnlineTripletLoss(margin, HardestNegativeTripletSelector(margin))
+        if args.triplets == 'semi-hard':
+            loss_fn = OnlineTripletLoss(margin, SemihardNegativeTripletSelector(margin))
+        if args.triplets == 'random-negative':
+            loss_fn = OnlineTripletLoss(margin, RandomNegativeTripletSelector(margin))
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.decay)
     scheduler = lr_scheduler.StepLR(optimizer, 8, gamma=0.1, last_epoch=-1)
     n_epochs = args.epochs
@@ -113,20 +125,32 @@ if __name__ == '__main__':
         scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
         epoch = checkpoint['epoch']
         print("Restarting training from checkpoint...")
-        fit(online_train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval,
-            metrics=[AverageNonzeroTripletsMetric()], start_epoch=epoch)
+        if args.classify:
+            fit(train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval, start_epoch=epoch)
+        else:
+            fit(train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval,
+                metrics=[AverageNonzeroTripletsMetric()], start_epoch=epoch)
     else:
         print("Starting training phase...")
-        fit(online_train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval,
-            metrics=[AverageNonzeroTripletsMetric()])
+        if args.classify:
+            fit(train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval)
+        else:
+            fit(train_loader, model, loss_fn, optimizer, scheduler, n_epochs, cuda, log_interval,
+                metrics=[AverageNonzeroTripletsMetric()])
 
-    if args.restart:
-        print("Restarting evaluation from dump...")
-    else:
+    if args.classify:
         print("Starting evaluation phase...")
-    if args.eval == "gpu":
-        evaluate_gpu(train_dataset, test_dataset, model, thresh=args.thresh, cmc_rank=args.rank, restart=args.restart)
-    if args.eval == "cpu":
-        evaluate(train_dataset, test_dataset, model, thresh=args.thresh, cmc_rank=args.rank, restart=args.restart)
-    if args.eval == "vram-opt":
-        evaluate_vram_opt(train_dataset, test_dataset, model, thresh=args.thresh, cmc_rank=args.rank, restart=args.restart)
+        classification(train_loader, test_loader, model, cmc_rank=args.rank, n_classes=args.train_max - 1)
+    else:
+        if args.restart:
+            print("Restarting evaluation from dump...")
+        else:
+            print("Starting evaluation phase...")
+        if args.eval == "gpu":
+            evaluate_gpu(train_dataset, test_dataset, model, thresh=args.thresh, cmc_rank=args.rank,
+                         restart=args.restart)
+        if args.eval == "cpu":
+            evaluate(train_dataset, test_dataset, model, thresh=args.thresh, cmc_rank=args.rank, restart=args.restart)
+        if args.eval == "vram-opt":
+            evaluate_vram_opt(train_dataset, test_dataset, model, thresh=args.thresh, cmc_rank=args.rank,
+                              restart=args.restart)

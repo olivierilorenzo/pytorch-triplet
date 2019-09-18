@@ -4,6 +4,34 @@ import numpy as np
 from metrics import average_precision, cmc_score, open_set_scores
 
 
+def classification(train_loader, test_loader, model, cmc_rank, n_classes):
+    cuda = torch.cuda.is_available()
+    train_scores, train_lab = extract_embeddings(train_loader, model, cuda, n_classes, classify=True)
+    test_scores, test_lab = extract_embeddings(test_loader, model, cuda, n_classes, classify=True)
+    rank_list = []  # contains ranks of every test/query vector
+    match_list = []  # contains the predicted labels of the query vectors, rank1 match
+    ap_list = []  # contains the average precision of the query vectors
+    tot = len(test_lab)
+
+    for i in range(0, tot):
+        pred_labels = train_lab[np.argsort(-test_scores[i])]
+        ap = average_precision(test_lab[i], pred_labels)
+        pred_labels = pred_labels[:cmc_rank]
+
+        rank = 0
+        for k in range(len(pred_labels) - 1, -1, -1):  # pre-ranking of query vector
+            if pred_labels[k] == test_lab[i]:
+                rank = k + 1
+
+        rank_list.append(rank)
+        match_list.append(pred_labels[0])
+        ap_list.append(ap)
+        print('\r Test {} of {}'.format(i + 1, tot), end="")
+    print("")
+    print("mAP: {}%".format(np.mean(ap_list) * 100))
+    cmc_score(rank_list, rank_max=cmc_rank)
+
+
 def evaluate(train_dataset, test_dataset, model, thresh, cmc_rank, restart=False):
     """
     :param train_dataset: train dataset object
@@ -169,13 +197,16 @@ def evaluate_gpu(train_dataset, test_dataset, model, thresh, cmc_rank, restart=F
     open_set_scores(match_list, dist_list, test_lab, thresh)
 
 
-def extract_embeddings(dataloader, model, cuda):
+def extract_embeddings(dataloader, model, cuda, n_classes=1000, classify=False):
     """
     Extracts feature vectors of image and respective labels from the dataloader
     """
     with torch.no_grad():
         model.eval()
-        embeddings = np.zeros((len(dataloader.dataset), 1000))
+        if classify:
+            embeddings = np.zeros((len(dataloader.dataset), n_classes))
+        else:
+            embeddings = np.zeros((len(dataloader.dataset), 1000))
         labels = np.zeros(len(dataloader.dataset))
         k = 0
         for images, target in dataloader:
