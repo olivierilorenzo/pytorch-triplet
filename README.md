@@ -92,13 +92,13 @@ You can get similar information with --h or --help command from terminal:
 Training from scratch:
 
 ```
-!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --data_aug 0 --epochs 20 --tuning full --classes 5 --samples 20 --lr 10e-4 --decay 10e-5 
+!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --data_aug 0 --epochs 20 --tuning full --classes 5 --samples 20 --lr 0.0001 --decay 0.00001 
 ```
 
 Restarting training from a tar checkpoint:
 
 ```
-!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --epochs 20 --tuning layer3 --classes 5 --samples 20 --lr 10e-4 --decay 10e-5 --checkpoint
+!python3 main.py --train_min 700 --train_max 800 --test_min 700 --test_max 800 --epochs 20 --tuning layer3 --classes 5 --samples 20 --lr 0.0001 --decay 0.00001 --checkpoint
 ```
 
 Restarting network test from a pickle dump:

@@ -9,7 +9,7 @@ from datasets import TVReID
 from datasets import BalancedBatchSampler
 from networks import EmbeddingResNet, EmbeddingVgg16, EmbeddingInception, EmbeddingAlexNet, EmbeddingResNeXt, EmbeddingDenseNet, EmbeddingGoogleNet
 from losses import OnlineTripletLoss
-from utils import AllTripletSelector, HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector
+from utils import HardestNegativeTripletSelector, RandomNegativeTripletSelector, SemihardNegativeTripletSelector
 from metrics import AverageNonzeroTripletsMetric
 from trainer import fit
 from evaluation import evaluate, evaluate_gpu, evaluate_vram_opt, classification
@@ -22,19 +22,19 @@ parser.add_argument('--test_max', help="last pid of the testing interval", type=
 parser.add_argument('--data_aug', default=0, help="<0> no data augmentation, <1> horizontal flip + random crop, "
                                                   "<2> horizontal flip + vertical flip + random crop", type=int)
 parser.add_argument('--non_target', default=0, help="n of impostors", type=int)
-parser.add_argument('--classes', default=5, help="n of classes in the mini-batch", type=int)
-parser.add_argument('--samples', default=20, help="n of sample per class in the mini-batch", type=int)
+parser.add_argument('--classes', default=10, help="n of classes in the mini-batch", type=int)
+parser.add_argument('--samples', default=40, help="n of sample per class in the mini-batch", type=int)
 parser.add_argument('--network', default="resnet", help="choose between <resnet>, <vgg16>, <alexnet>, <densenet>, "
                                                         "<resnext>, <googlenet> and <inception>(v3) "
                                                         "for feature extraction")
-parser.add_argument('--tuning', default="full", help="choose between <full> network training or <ft> for fine-tuning."
-                                                     " If you choosed ResNet or ResneXt as network you can specify the "
-                                                     "starting <layer> (layer3, layer4, fc ...) for finetuning")
+parser.add_argument('--tuning', default="layer4", help="choose between <full> network training or <ft> for fine-tuning."
+                                                       " If you chose ResNet or ResneXt as network you can specify "
+                                                       "the starting <layer> (layer3, layer4, fc ...) for finetuning")
 parser.add_argument('--classify', action="store_true", default=False, help="use choosed network for classification,"
                                                                            " without tripletloss")
 parser.add_argument('--margin', default=1., help="triplet loss margin", type=float)
-parser.add_argument('--lr', default=1e-3, help="learning rate", type=float)
-parser.add_argument('--decay', default=1e-4, help="weight decay for Adam optimizer", type=float)
+parser.add_argument('--lr', default=0.001, help="learning rate", type=float)
+parser.add_argument('--decay', default=0.0001, help="weight decay for Adam optimizer", type=float)
 parser.add_argument('--triplets', default="batch-hard", help="choose triplet selector between <batch-hard>,<semi-hard>"
                                                              " and <random-negative>")
 parser.add_argument('--epochs', default=20, help="n of training epochs", type=int)
