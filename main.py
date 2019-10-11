@@ -41,7 +41,7 @@ parser.add_argument('--epochs', default=20, help="n of training epochs", type=in
 parser.add_argument('--log', default=50, help="log interval length", type=int)
 parser.add_argument('--checkpoint', action="store_true", default=False, help="resume training from a checkpoint")
 parser.add_argument('--eval', default="gpu", help="choose testing hardware between <gpu>,<cpu> or <vram-opt>")
-parser.add_argument('--thresh', default=20, help="discard threshold for ttr,ftr metrics", type=int)
+parser.add_argument('--thresh', default=20, help="discard threshold for ttr,ftr metrics", type=float)
 parser.add_argument('--rank', default=20, help="max cmc rank", type=int)
 parser.add_argument('--restart', action="store_true", default=False, help="resume evaluation from a pickle dump")
 
