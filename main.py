@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     if args.classify:
         print("Starting evaluation phase...")
-        classification(train_loader, test_loader, model, cmc_rank=args.rank, n_classes=args.train_max - 1)
+        classification(test_loader, model, cmc_rank=args.rank, n_classes=args.train_max - 1)
     else:
         if args.restart:
             print("Restarting evaluation from dump...")
